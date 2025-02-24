@@ -1,0 +1,13 @@
+export enum ENV_CONSTANTS {
+  APP_PORT = 'APP_PORT',
+  NODE_ENV = 'NODE_ENV',
+  API_VERSION = 'API_VERSION',
+  ENABLE_DOCUMENTATION = 'ENABLE_DOCUMENTATION',
+  API_PREFIX = 'API_PREFIX',
+}
+
+export const ENV_CONSTANTS_VALUES = {
+  PRODUCTION: 'production',
+  DEVELOPMENT: 'development',
+  TEST: 'test',
+};

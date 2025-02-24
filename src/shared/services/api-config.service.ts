@@ -1,9 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { join } from 'path';
 import {
   ENV_CONSTANTS,
   ENV_CONSTANTS_VALUES,
 } from 'src/constants/env.constants';
+import { NamingStrategyInterface } from 'typeorm';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 @Injectable()
 export class ApiConfigService {
@@ -22,6 +26,9 @@ export class ApiConfigService {
 
   get isTest(): boolean {
     return this.nodeEnv === ENV_CONSTANTS_VALUES.TEST;
+  }
+  get isLocal(): boolean {
+    return this.nodeEnv === ENV_CONSTANTS_VALUES.LOCAL;
   }
 
   private get nodeEnv(): string {
@@ -59,5 +66,50 @@ export class ApiConfigService {
 
   get apiPrefix(): string {
     return this.get(ENV_CONSTANTS.API_PREFIX);
+  }
+
+  private getString(key: string): string {
+    const value = this.configService.get<string>(key);
+    if (!value) {
+      throw new Error(`${key} environment variable does not set`);
+    }
+    return value;
+  }
+
+  private getNumber(key: string): number {
+    const value = this.getString(key);
+    try {
+      return Number(value);
+    } catch {
+      throw new Error(`${key} environment variable is not a number`);
+    }
+  }
+
+  get postgresConfig(): TypeOrmModuleOptions {
+    const entities = [join(__dirname, '../../database/**/*.entity{.ts,.js}')];
+    const migrations = [
+      join(__dirname, '../../database/migrations/*{.ts,.js}'),
+    ];
+    return {
+      entities,
+      migrations,
+      type: 'postgres',
+      host: this.getString(ENV_CONSTANTS.DB_HOST),
+      port: this.getNumber(ENV_CONSTANTS.DB_PORT),
+      username: this.getString(ENV_CONSTANTS.DB_USERNAME),
+      password: this.getString(ENV_CONSTANTS.DB_PASSWORD),
+      database: this.getString(ENV_CONSTANTS.DB_DATABASE),
+      migrationsRun: this.isProduction,
+      logging: this.getBoolean(ENV_CONSTANTS.ENABLE_ORM_LOGS),
+      namingStrategy: new SnakeNamingStrategy() as NamingStrategyInterface,
+      synchronize: this.isLocal,
+      extra: {
+        max: this.getNumber(ENV_CONSTANTS.MAX_CONNECTIONS) ?? 100,
+        ssl:
+          this.getString(ENV_CONSTANTS.DB_SSL_ENABLED) === 'true'
+            ? { rejectUnauthorized: false }
+            : undefined,
+      },
+    };
   }
 }

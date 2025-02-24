@@ -30,12 +30,7 @@ module.exports = {
     'plugin:import/recommended',
     'plugin:prettier/recommended',
   ],
-  plugins: [
-    '@typescript-eslint',
-    'prettier',
-    'simple-import-sort',
-    'import',
-  ],
+  plugins: ['@typescript-eslint', 'prettier', 'simple-import-sort', 'import'],
   rules: {
     'prettier/prettier': [
       'error',
@@ -54,7 +49,10 @@ module.exports = {
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-inferrable-types': 'error',
-    '@typescript-eslint/consistent-type-imports': ['error', { prefer: 'type-imports', fixStyle: 'inline-type-imports' }],
+    '@typescript-eslint/consistent-type-imports': [
+      'error',
+      { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
+    ],
     '@typescript-eslint/no-non-null-assertion': 'error',
     '@typescript-eslint/no-shadow': 'error',
     '@typescript-eslint/prefer-for-of': 'error',

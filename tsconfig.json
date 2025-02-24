@@ -1,6 +1,10 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "CommonJS",
+    "lib": ["ESNext"],
+    "moduleResolution": "Node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,

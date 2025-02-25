@@ -1,6 +1,8 @@
 import { VersioningType } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { type NestExpressApplication } from '@nestjs/platform-express';
+import helmet from 'helmet';
+import morgan from 'morgan';
 import { initializeTransactionalContext } from 'typeorm-transactional';
 
 import { AppModule } from './app.module';
@@ -9,7 +11,11 @@ import { ApiConfigService } from './shared/services/api-config.service';
 
 async function bootstrap() {
   initializeTransactionalContext();
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    cors: true,
+  });
+  app.use(helmet());
+  app.use(morgan('combined'));
 
   const configService = app.get(ApiConfigService);
   app.enableVersioning({

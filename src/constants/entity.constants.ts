@@ -1,0 +1,5 @@
+export const ENTITY_NAME = {
+  ROLE: 'roles',
+  USER: 'users',
+  USER_SETTINGS: 'user_settings',
+};

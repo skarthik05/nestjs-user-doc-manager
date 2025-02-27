@@ -2,12 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { join } from 'path';
+import { NamingStrategyInterface } from 'typeorm';
+import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+
 import {
   ENV_CONSTANTS,
   ENV_CONSTANTS_VALUES,
-} from 'src/constants/env.constants';
-import { NamingStrategyInterface } from 'typeorm';
-import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
+} from '../../constants/env.constants';
 
 @Injectable()
 export class ApiConfigService {

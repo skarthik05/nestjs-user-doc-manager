@@ -6,7 +6,10 @@ import { addTransactionalDataSource } from 'typeorm-transactional';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './modules/auth/auth.module';
 import { HealthCheckerModule } from './modules/health-checker/health-checker.module';
+import { RolesModule } from './modules/roles/roles.module';
+import { UserModule } from './modules/users/users.module';
 import { ApiConfigService } from './shared/services/api-config.service';
 import { SharedModule } from './shared/shared.module';
 
@@ -33,6 +36,9 @@ import { SharedModule } from './shared/shared.module';
     }),
     SharedModule,
     HealthCheckerModule,
+    AuthModule,
+    UserModule,
+    RolesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

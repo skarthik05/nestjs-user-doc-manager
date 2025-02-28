@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { FindOptionsWhere, Repository } from 'typeorm';
 
 import { NullableType } from '../../../common/types/nullable.type';
 import { UserEntity } from '../../../database/entity/user.entity';
@@ -44,5 +44,11 @@ export class UsersRelationalRepository implements UserRepository {
       this.userSettingsRepository.create(persistenceModel),
     );
     return newEntity;
+  }
+  async findOneBy(
+    options: FindOptionsWhere<UserEntity>,
+  ): Promise<NullableType<User>> {
+    const user = await this.usersRepository.findOneBy(options);
+    return user ? UserMapper.toDomain(user) : null;
   }
 }

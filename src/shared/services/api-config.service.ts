@@ -113,4 +113,13 @@ export class ApiConfigService {
       },
     };
   }
+
+  get authConfig() {
+    return {
+      jwtSecret: this.getString(ENV_CONSTANTS.JWT_SECRET),
+      jwtExpirationTime: this.getString(ENV_CONSTANTS.JWT_EXPIRATION_TIME),
+      refreshSecret: this.getString(ENV_CONSTANTS.JWT_REFRESH_SECRET),
+      refreshExpires: this.getString(ENV_CONSTANTS.JWT_REFRESH_EXPIRATION_TIME),
+    };
+  }
 }

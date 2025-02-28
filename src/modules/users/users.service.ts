@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
+import { FindOptionsWhere } from 'typeorm';
 import { Transactional } from 'typeorm-transactional';
 
-import BcryptUtil from '../../common/bcrypt.util';
+import { NullableType } from '../../common/types/nullable.type';
+import { BcryptUtil } from '../../common/utils';
 import {
   DetailsConflictException,
   DetailsNotFoundException,
@@ -74,5 +76,12 @@ export class UserService {
       isPhoneVerified: false,
     });
     return user;
+  }
+
+  async login(email: User['email']): Promise<NullableType<User>> {
+    return this.usersRepository.findByEmail(email);
+  }
+  async findOne(options: FindOptionsWhere<User>): Promise<NullableType<User>> {
+    return this.usersRepository.findOneBy(options);
   }
 }

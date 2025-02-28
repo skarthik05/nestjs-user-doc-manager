@@ -7,8 +7,7 @@ import {
   DetailsConflictException,
   DetailsNotFoundException,
 } from '../../exceptions';
-import { UserEntity } from 'src/database/entity/user.entity';
-// Mock the transactional decorators
+import { UserEntity } from '../../database/entity/user.entity';
 jest.mock('typeorm-transactional', () => ({
   Transactional: () => () => ({}),
   initializeTransactionalContext: () => {},
@@ -59,17 +58,15 @@ describe('UserService', () => {
         lastName: 'Doe',
         password: 'password123',
       };
-      jest
-        .spyOn(userRepository, 'findByEmail')
-        .mockResolvedValueOnce({
-          email: 'test@example.com',
-          firstName: 'John',
-          lastName: 'Doe',
-          password: 'password123',
-          roleId: 1,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        } as unknown as UserEntity);
+      jest.spyOn(userRepository, 'findByEmail').mockResolvedValueOnce({
+        email: 'test@example.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        password: 'password123',
+        roleId: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as unknown as UserEntity);
       await expect(service.create(createUserDto)).rejects.toThrow(
         DetailsConflictException,
       );

@@ -18,3 +18,9 @@ export class DetailsNotFoundException<
     super(`${entity} with ${field} ${value} not found.`, HttpStatus.NOT_FOUND);
   }
 }
+
+export class InvalidPasswordException extends HttpException {
+  constructor() {
+    super('Invalid password.', HttpStatus.BAD_REQUEST);
+  }
+}

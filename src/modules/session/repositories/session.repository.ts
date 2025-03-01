@@ -42,4 +42,8 @@ export class SessionRelationalRepository implements SessionRepository {
     const updatedDetails = await this.sessionRepository.save(persistenceModel);
     return SessionMapper.toDomain(updatedDetails);
   }
+
+  async deleteById(id: number): Promise<void> {
+    await this.sessionRepository.delete(id);
+  }
 }

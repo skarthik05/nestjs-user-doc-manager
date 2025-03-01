@@ -13,4 +13,5 @@ export abstract class SessionRepository {
       Omit<Session, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>
     >,
   ): Promise<Session>;
+  abstract deleteById(id: number): Promise<void>;
 }

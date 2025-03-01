@@ -140,4 +140,9 @@ export class AuthService {
       refreshToken,
     };
   }
+
+  async logout(data: Pick<JwtRefreshPayloadType, 'sessionId'>): Promise<void> {
+    console.log('data', data);
+    await this.sessionService.deleteById(data.sessionId);
+  }
 }

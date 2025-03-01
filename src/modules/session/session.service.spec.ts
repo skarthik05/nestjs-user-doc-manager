@@ -31,6 +31,7 @@ describe('SessionService', () => {
             create: jest.fn(),
             findById: jest.fn(),
             update: jest.fn(),
+            deleteById: jest.fn(),
           },
         },
       ],
@@ -121,6 +122,28 @@ describe('SessionService', () => {
       expect(result).toBeNull();
       expect(sessionRepository.findById).toHaveBeenCalledWith(999);
       expect(sessionRepository.update).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('deleteById', () => {
+    it('should successfully delete a session', async () => {
+      const sessionId = 1;
+      const deleteByIdSpy = jest
+        .spyOn(sessionRepository, 'deleteById')
+        .mockResolvedValue(undefined);
+
+      await service.deleteById(sessionId);
+
+      expect(deleteByIdSpy).toHaveBeenCalledWith(sessionId);
+    });
+
+    it('should handle errors from repository', async () => {
+      const sessionId = 1;
+      const error = new Error('Database error');
+      jest.spyOn(sessionRepository, 'deleteById').mockRejectedValue(error);
+
+      await expect(service.deleteById(sessionId)).rejects.toThrow(error);
+      expect(sessionRepository.deleteById).toHaveBeenCalledWith(sessionId);
     });
   });
 });

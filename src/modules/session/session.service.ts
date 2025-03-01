@@ -30,4 +30,8 @@ export class SessionService {
     }
     return this.sessionRepository.update(id, Object.assign(session, payload));
   }
+
+  async deleteById(id: number): Promise<void> {
+    await this.sessionRepository.deleteById(id);
+  }
 }

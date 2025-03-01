@@ -1,4 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import {
   HealthCheck,
   type HealthCheckResult,
@@ -7,7 +8,10 @@ import {
 } from '@nestjs/terminus';
 
 import { APP_ROUTES } from '../../constants/app.constants';
+import { Public } from '../../decorators/public-route.decorator';
 
+@ApiBearerAuth()
+@Public()
 @Controller(APP_ROUTES.HEALTH)
 export class HealthCheckerController {
   constructor(

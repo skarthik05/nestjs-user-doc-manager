@@ -7,8 +7,7 @@ import { addTransactionalDataSource } from 'typeorm-transactional';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import JwtAuthGuard from './guards/jwt-auth.guard';
-import { RolesGuard } from './guards/roles.guard';
+import { JwtRolesGuard } from './guards/auth.guard';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthCheckerModule } from './modules/health-checker/health-checker.module';
 import { RolesModule } from './modules/roles/roles.module';
@@ -48,11 +47,7 @@ import { SharedModule } from './shared/shared.module';
     AppService,
     {
       provide: APP_GUARD,
-      useClass: JwtAuthGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
+      useClass: JwtRolesGuard,
     },
   ],
 })

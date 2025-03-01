@@ -29,6 +29,8 @@ describe('SessionService', () => {
           provide: SessionRepository,
           useValue: {
             create: jest.fn(),
+            findById: jest.fn(),
+            update: jest.fn(),
           },
         },
       ],
@@ -68,6 +70,57 @@ describe('SessionService', () => {
 
       await expect(service.create(sessionData)).rejects.toThrow(error);
       expect(sessionRepository.create).toHaveBeenCalledWith(sessionData);
+    });
+  });
+
+  describe('findById', () => {
+    it('should return a session when found', async () => {
+      jest.spyOn(sessionRepository, 'findById').mockResolvedValue(mockSession);
+
+      const result = await service.findById(1);
+
+      expect(result).toEqual(mockSession);
+      expect(sessionRepository.findById).toHaveBeenCalledWith(1);
+    });
+
+    it('should return null when session is not found', async () => {
+      jest.spyOn(sessionRepository, 'findById').mockResolvedValue(null);
+
+      const result = await service.findById(999);
+
+      expect(result).toBeNull();
+      expect(sessionRepository.findById).toHaveBeenCalledWith(999);
+    });
+  });
+
+  describe('update', () => {
+    it('should successfully update an existing session', async () => {
+      const updateData = { hash: 'newHash456' };
+      const updatedSession = { ...mockSession, ...updateData };
+
+      jest.spyOn(sessionRepository, 'findById').mockResolvedValue(mockSession);
+      jest.spyOn(sessionRepository, 'update').mockResolvedValue(updatedSession);
+
+      const result = await service.update(1, updateData);
+
+      expect(result).toEqual(updatedSession);
+      expect(sessionRepository.findById).toHaveBeenCalledWith(1);
+      expect(sessionRepository.update).toHaveBeenCalledWith(1, {
+        ...mockSession,
+        ...updateData,
+      });
+    });
+
+    it('should return null when trying to update non-existent session', async () => {
+      const updateData = { hash: 'newHash456' };
+
+      jest.spyOn(sessionRepository, 'findById').mockResolvedValue(null);
+
+      const result = await service.update(999, updateData);
+
+      expect(result).toBeNull();
+      expect(sessionRepository.findById).toHaveBeenCalledWith(999);
+      expect(sessionRepository.update).not.toHaveBeenCalled();
     });
   });
 });

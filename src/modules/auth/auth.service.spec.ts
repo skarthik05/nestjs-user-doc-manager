@@ -13,7 +13,11 @@ import {
 import { User } from '../users/domain/user';
 import { Role } from '../roles/domain/role';
 import { Session } from '../session/domain/session';
+import { JwtRefreshPayloadType } from './strategies/types/jwt-refresh-payload.type';
 
+jest.mock('typeorm-transactional', () => ({
+  Transactional: () => () => ({}),
+}));
 jest.mock('../../common/utils/bcrypt.util', () => ({
   BcryptUtil: {
     hashPassword: jest.fn().mockImplementation((password, salt) => {
@@ -25,8 +29,10 @@ jest.mock('../../common/utils/bcrypt.util', () => ({
   },
 }));
 
-jest.mock('typeorm-transactional', () => ({
-  Transactional: () => () => ({}),
+jest.mock('../../common/utils/crypto.util', () => ({
+  CryptoUtil: {
+    generateHash: jest.fn().mockReturnValue('newGeneratedHash123'),
+  },
 }));
 
 describe('AuthService', () => {
@@ -53,6 +59,11 @@ describe('AuthService', () => {
     user: mockUser,
   } as Session;
 
+  const mockTokens = {
+    accessToken: 'mockAccessToken',
+    refreshToken: 'mockRefreshToken',
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -62,12 +73,15 @@ describe('AuthService', () => {
           useValue: {
             create: jest.fn(),
             login: jest.fn(),
+            findById: jest.fn(),
           },
         },
         {
           provide: SessionService,
           useValue: {
             create: jest.fn(),
+            findById: jest.fn(),
+            update: jest.fn(),
           },
         },
         {
@@ -217,7 +231,7 @@ describe('AuthService', () => {
         1,
         expect.objectContaining({
           id: mockUser.id,
-          roleId: mockUser.role?.id,
+          roleId: (mockUser.role as Role).id,
           sessionId: mockSession.id,
         }),
       );
@@ -229,6 +243,114 @@ describe('AuthService', () => {
           sessionId: mockSession.id,
           hash: expect.any(String),
         }),
+        {
+          secret: configService.authConfig.refreshSecret,
+          expiresIn: configService.authConfig.refreshExpires,
+        },
+      );
+    });
+  });
+
+  describe('refreshToken', () => {
+    const mockRefreshData: Pick<JwtRefreshPayloadType, 'sessionId' | 'hash'> = {
+      sessionId: 1,
+      hash: 'sessionHash123',
+    };
+
+    beforeEach(() => {
+      jest
+        .spyOn(jwtService, 'signAsync')
+        .mockImplementation((payload: any, options?: any) => {
+          return Promise.resolve(
+            options?.secret === configService.authConfig.refreshSecret
+              ? mockTokens.refreshToken
+              : mockTokens.accessToken,
+          );
+        });
+    });
+
+    it('should successfully refresh tokens when session and user are valid', async () => {
+      jest.spyOn(sessionService, 'findById').mockResolvedValue(mockSession);
+      jest.spyOn(userService, 'findById').mockResolvedValue(mockUser);
+      jest
+        .spyOn(sessionService, 'update')
+        .mockResolvedValue({ ...mockSession, hash: 'newGeneratedHash123' });
+
+      const result = await service.refreshToken(mockRefreshData);
+
+      expect(result).toEqual(mockTokens);
+      expect(sessionService.findById).toHaveBeenCalledWith(
+        mockRefreshData.sessionId,
+      );
+      expect(userService.findById).toHaveBeenCalledWith(mockSession.user.id);
+      expect(sessionService.update).toHaveBeenCalledWith(mockSession.id, {
+        hash: 'newGeneratedHash123',
+      });
+    });
+
+    it('should throw UnauthorizedException when session is not found', async () => {
+      jest.spyOn(sessionService, 'findById').mockResolvedValue(null);
+
+      await expect(service.refreshToken(mockRefreshData)).rejects.toThrow(
+        new UnauthorizedException('Session not found'),
+      );
+    });
+
+    it('should throw UnauthorizedException when hash does not match', async () => {
+      const sessionWithDifferentHash = {
+        ...mockSession,
+        hash: 'differentHash',
+      };
+      jest
+        .spyOn(sessionService, 'findById')
+        .mockResolvedValue(sessionWithDifferentHash);
+
+      await expect(service.refreshToken(mockRefreshData)).rejects.toThrow(
+        new UnauthorizedException('Invalid hash'),
+      );
+    });
+
+    it('should throw UnauthorizedException when user is not found', async () => {
+      jest.spyOn(sessionService, 'findById').mockResolvedValue(mockSession);
+      jest.spyOn(userService, 'findById').mockResolvedValue(null);
+
+      await expect(service.refreshToken(mockRefreshData)).rejects.toThrow(
+        new UnauthorizedException('User not found or has no role'),
+      );
+    });
+
+    it('should throw UnauthorizedException when user has no role', async () => {
+      const userWithoutRole = { ...mockUser, role: null };
+      jest.spyOn(sessionService, 'findById').mockResolvedValue(mockSession);
+      jest.spyOn(userService, 'findById').mockResolvedValue(userWithoutRole);
+
+      await expect(service.refreshToken(mockRefreshData)).rejects.toThrow(
+        new UnauthorizedException('User not found or has no role'),
+      );
+    });
+
+    it('should generate new tokens with correct payload', async () => {
+      jest.spyOn(sessionService, 'findById').mockResolvedValue(mockSession);
+      jest.spyOn(userService, 'findById').mockResolvedValue(mockUser);
+      jest
+        .spyOn(sessionService, 'update')
+        .mockResolvedValue({ ...mockSession, hash: 'newGeneratedHash123' });
+      const jwtSpy = jest.spyOn(jwtService, 'signAsync');
+
+      await service.refreshToken(mockRefreshData);
+
+      expect(jwtSpy).toHaveBeenNthCalledWith(1, {
+        id: mockUser.id,
+        roleId: (mockUser.role as Role).id,
+        sessionId: mockSession.id,
+      });
+
+      expect(jwtSpy).toHaveBeenNthCalledWith(
+        2,
+        {
+          sessionId: mockSession.id,
+          hash: 'newGeneratedHash123',
+        },
         {
           secret: configService.authConfig.refreshSecret,
           expiresIn: configService.authConfig.refreshExpires,

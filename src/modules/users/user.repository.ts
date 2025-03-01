@@ -18,4 +18,6 @@ export abstract class UserRepository {
   abstract findOneBy(
     options: FindOptionsWhere<User>,
   ): Promise<NullableType<User>>;
+
+  abstract findById(id: number): Promise<NullableType<User>>;
 }

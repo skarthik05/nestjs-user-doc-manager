@@ -84,4 +84,7 @@ export class UserService {
   async findOne(options: FindOptionsWhere<User>): Promise<NullableType<User>> {
     return this.usersRepository.findOneBy(options);
   }
+  async findById(id: number): Promise<NullableType<User>> {
+    return this.usersRepository.findById(id);
+  }
 }

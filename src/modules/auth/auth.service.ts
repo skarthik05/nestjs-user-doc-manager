@@ -16,6 +16,7 @@ import { CreateUserDto } from '../users/dto/create-user.dto';
 import { UserLoginDto } from '../users/dto/user-login-dto';
 import { UserService } from '../users/users.service';
 import { LoginPayloadDto } from './dto/login-response.dto';
+import { JwtRefreshPayloadType } from './strategies/types/jwt-refresh-payload.type';
 
 @Injectable()
 export class AuthService {
@@ -98,6 +99,41 @@ export class AuthService {
         },
       ),
     ]);
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+  async refreshToken(
+    data: Pick<JwtRefreshPayloadType, 'sessionId' | 'hash'>,
+  ): Promise<LoginPayloadDto> {
+    const session = await this.sessionService.findById(data.sessionId);
+
+    if (!session) {
+      throw new UnauthorizedException('Session not found');
+    }
+    if (session.hash !== data.hash) {
+      throw new UnauthorizedException('Invalid hash');
+    }
+
+    const hash = CryptoUtil.generateHash();
+    const user = await this.userService.findById(session.user.id);
+
+    if (!user || !user.role) {
+      throw new UnauthorizedException('User not found or has no role');
+    }
+
+    await this.sessionService.update(session.id, {
+      hash,
+    });
+
+    const { accessToken, refreshToken } = await this.getTokensData({
+      id: session.user.id,
+      roleId: user.role.id,
+      sessionId: session.id,
+      hash,
+    });
 
     return {
       accessToken,

@@ -1,11 +1,21 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { APP_ROUTES } from '../../constants/app.constants';
 import { Public } from '../../decorators/public-route.decorator';
 import { UserLoginDto } from '../users/dto/user-login-dto';
 import { AuthService } from './auth.service';
 import { LoginPayloadDto } from './dto/login-response.dto';
+import { RequestWithUser } from './dto/request-with-user.dto';
 import { UserRegisterDto } from './dto/user-register.dto';
 
 @ApiTags(APP_ROUTES.AUTH)
@@ -31,5 +41,16 @@ export class AuthController {
   })
   async login(@Body() loginDto: UserLoginDto): Promise<LoginPayloadDto> {
     return this.service.login(loginDto);
+  }
+
+  @ApiBearerAuth()
+  @Post('/refresh')
+  @UseGuards(AuthGuard('jwt-refresh'))
+  @HttpCode(HttpStatus.OK)
+  public refresh(@Req() request: RequestWithUser): Promise<LoginPayloadDto> {
+    return this.service.refreshToken({
+      sessionId: request.user.sessionId,
+      hash: request.user.hash,
+    });
   }
 }

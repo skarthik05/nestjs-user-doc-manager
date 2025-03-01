@@ -51,4 +51,8 @@ export class UsersRelationalRepository implements UserRepository {
     const user = await this.usersRepository.findOneBy(options);
     return user ? UserMapper.toDomain(user) : null;
   }
+  async findById(id: number): Promise<NullableType<User>> {
+    const user = await this.usersRepository.findOneBy({ id });
+    return user ? UserMapper.toDomain(user) : null;
+  }
 }

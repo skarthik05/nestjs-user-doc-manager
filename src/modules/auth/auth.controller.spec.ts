@@ -26,6 +26,7 @@ describe('AuthController', () => {
             register: jest.fn(),
             login: jest.fn(),
             refreshToken: jest.fn(),
+            logout: jest.fn().mockImplementation(() => Promise.resolve()),
           },
         },
       ],
@@ -33,6 +34,10 @@ describe('AuthController', () => {
 
     controller = module.get<AuthController>(AuthController);
     authService = module.get<AuthService>(AuthService);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -89,6 +94,36 @@ describe('AuthController', () => {
         hash: mockRequest.user.hash,
       });
       expect(result).toEqual(mockLoginPayload);
+    });
+  });
+
+  describe('logout', () => {
+    it('should call authService.logout with correct session id', async () => {
+      const mockRequest = {
+        user: {
+          sessionId: 1,
+          hash: 'mock-hash',
+        },
+      } as RequestWithUser;
+
+      await controller.logout(mockRequest);
+
+      expect(authService.logout).toHaveBeenCalledWith({
+        sessionId: mockRequest.user.sessionId,
+      });
+    });
+
+    it('should return void when logout is successful', async () => {
+      const mockRequest = {
+        user: {
+          sessionId: 1,
+          hash: 'mock-hash',
+        },
+      } as RequestWithUser;
+
+      const result = await controller.logout(mockRequest);
+
+      expect(result).toBeUndefined();
     });
   });
 });

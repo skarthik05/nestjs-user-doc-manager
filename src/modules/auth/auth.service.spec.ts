@@ -82,6 +82,7 @@ describe('AuthService', () => {
             create: jest.fn(),
             findById: jest.fn(),
             update: jest.fn(),
+            deleteById: jest.fn(),
           },
         },
         {
@@ -277,7 +278,6 @@ describe('AuthService', () => {
         .mockResolvedValue({ ...mockSession, hash: 'newGeneratedHash123' });
 
       const result = await service.refreshToken(mockRefreshData);
-
       expect(result).toEqual(mockTokens);
       expect(sessionService.findById).toHaveBeenCalledWith(
         mockRefreshData.sessionId,
@@ -356,6 +356,26 @@ describe('AuthService', () => {
           expiresIn: configService.authConfig.refreshExpires,
         },
       );
+    });
+  });
+
+  describe('logout', () => {
+    it('should delete session by id', async () => {
+      const sessionId = 1;
+      const deleteByIdSpy = jest
+        .spyOn(sessionService, 'deleteById')
+        .mockResolvedValue(undefined);
+
+      await service.logout({ sessionId });
+
+      expect(deleteByIdSpy).toHaveBeenCalledWith(sessionId);
+    });
+
+    it('should handle non-existent session gracefully', async () => {
+      const sessionId = 999;
+      jest.spyOn(sessionService, 'deleteById').mockResolvedValue(undefined);
+
+      await expect(service.logout({ sessionId })).resolves.not.toThrow();
     });
   });
 });

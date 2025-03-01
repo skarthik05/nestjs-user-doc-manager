@@ -53,4 +53,14 @@ export class AuthController {
       hash: request.user.hash,
     });
   }
+
+  @ApiBearerAuth()
+  @Post('logout')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.NO_CONTENT)
+  public async logout(@Req() request: RequestWithUser): Promise<void> {
+    await this.service.logout({
+      sessionId: request.user.sessionId,
+    });
+  }
 }

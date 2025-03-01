@@ -19,6 +19,18 @@ describe('UserService', () => {
   let userRepository: UserRepository;
   let rolesService: RolesService;
 
+  const mockUser = {
+    id: 1,
+    email: 'test@example.com',
+    firstName: 'John',
+    lastName: 'Doe',
+    password: 'hashedPassword',
+    roleId: 1,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    deletedAt: null as Date | null,
+  } as UserEntity;
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -29,6 +41,8 @@ describe('UserService', () => {
             findByEmail: jest.fn(),
             create: jest.fn(),
             createUserSettings: jest.fn(),
+            findOneBy: jest.fn(),
+            findById: jest.fn(),
           },
         },
         {
@@ -121,6 +135,72 @@ describe('UserService', () => {
           role: defaultRole,
         }),
       );
+    });
+  });
+
+  describe('login', () => {
+    it('should return user when found by email', async () => {
+      jest.spyOn(userRepository, 'findByEmail').mockResolvedValue(mockUser);
+
+      const result = await service.login('test@example.com');
+
+      expect(result).toEqual(mockUser);
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(
+        'test@example.com',
+      );
+    });
+
+    it('should return null when user is not found', async () => {
+      jest.spyOn(userRepository, 'findByEmail').mockResolvedValue(null);
+
+      const result = await service.login('nonexistent@example.com');
+
+      expect(result).toBeNull();
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(
+        'nonexistent@example.com',
+      );
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return user when found by options', async () => {
+      const findOptions = { email: 'test@example.com' };
+      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(mockUser);
+
+      const result = await service.findOne(findOptions);
+
+      expect(result).toEqual(mockUser);
+      expect(userRepository.findOneBy).toHaveBeenCalledWith(findOptions);
+    });
+
+    it('should return null when user is not found', async () => {
+      const findOptions = { email: 'nonexistent@example.com' };
+      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(null);
+
+      const result = await service.findOne(findOptions);
+
+      expect(result).toBeNull();
+      expect(userRepository.findOneBy).toHaveBeenCalledWith(findOptions);
+    });
+  });
+
+  describe('findById', () => {
+    it('should return user when found by id', async () => {
+      jest.spyOn(userRepository, 'findById').mockResolvedValue(mockUser);
+
+      const result = await service.findById(1);
+
+      expect(result).toEqual(mockUser);
+      expect(userRepository.findById).toHaveBeenCalledWith(1);
+    });
+
+    it('should return null when user is not found', async () => {
+      jest.spyOn(userRepository, 'findById').mockResolvedValue(null);
+
+      const result = await service.findById(999);
+
+      expect(result).toBeNull();
+      expect(userRepository.findById).toHaveBeenCalledWith(999);
     });
   });
 });

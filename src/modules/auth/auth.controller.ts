@@ -2,6 +2,7 @@ import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 
 import { APP_ROUTES } from '../../constants/app.constants';
+import { Public } from '../../decorators/public-route.decorator';
 import { UserLoginDto } from '../users/dto/user-login-dto';
 import { AuthService } from './auth.service';
 import { LoginPayloadDto } from './dto/login-response.dto';
@@ -15,11 +16,13 @@ import { UserRegisterDto } from './dto/user-register.dto';
 export class AuthController {
   constructor(private readonly service: AuthService) {}
 
+  @Public()
   @Post('/register')
   @HttpCode(HttpStatus.OK)
   async register(@Body() createUserDto: UserRegisterDto): Promise<void> {
     return this.service.register(createUserDto);
   }
+  @Public()
   @Post('/login')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({

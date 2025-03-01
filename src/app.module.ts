@@ -1,11 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { APP_GUARD } from '@nestjs/core';
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { addTransactionalDataSource } from 'typeorm-transactional';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import JwtAuthGuard from './guards/jwt-auth.guard';
+import { RolesGuard } from './guards/roles.guard';
 import { AuthModule } from './modules/auth/auth.module';
 import { HealthCheckerModule } from './modules/health-checker/health-checker.module';
 import { RolesModule } from './modules/roles/roles.module';
@@ -21,7 +24,7 @@ import { SharedModule } from './shared/shared.module';
     }),
     TypeOrmModule.forRootAsync({
       imports: [SharedModule],
-      useFactory: (configService: ApiConfigService) =>
+      useFactory: (configService: ApiConfigService): TypeOrmModuleOptions =>
         configService.postgresConfig,
       inject: [ApiConfigService],
       dataSourceFactory: async (options) => {
@@ -41,6 +44,16 @@ import { SharedModule } from './shared/shared.module';
     RolesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+  ],
 })
 export class AppModule {}

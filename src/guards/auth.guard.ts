@@ -21,13 +21,17 @@ export class JwtRolesGuard extends AuthGuard('jwt') {
     super();
   }
 
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const requiredRoles = this.reflector.getAllAndOverride<RoleType[]>(
       ROLES_KEY,
       [context.getHandler(), context.getClass()],
     );
     if (!requiredRoles || requiredRoles.length === 0) {
       return true;
+    }
+    const authenticated = await super.canActivate(context);
+    if (!authenticated) {
+      return false;
     }
 
     const request = context.switchToHttp().getRequest<RequestWithUser>();

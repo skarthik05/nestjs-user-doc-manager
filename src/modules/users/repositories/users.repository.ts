@@ -52,7 +52,10 @@ export class UsersRelationalRepository implements UserRepository {
     return user ? UserMapper.toDomain(user) : null;
   }
   async findById(id: number): Promise<NullableType<User>> {
-    const user = await this.usersRepository.findOneBy({ id });
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      relations: ['role', 'settings'],
+    });
     return user ? UserMapper.toDomain(user) : null;
   }
 }

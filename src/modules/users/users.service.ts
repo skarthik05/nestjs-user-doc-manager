@@ -87,4 +87,13 @@ export class UserService {
   async findById(id: number): Promise<NullableType<User>> {
     return this.usersRepository.findById(id);
   }
+
+  async changeRole(userId: number, roleId: number): Promise<void> {
+    const user = await this.findById(userId);
+    if (!user) {
+      throw new DetailsNotFoundException('User', 'id', userId);
+    }
+
+    return this.rolesService.changeRole(userId, roleId);
+  }
 }

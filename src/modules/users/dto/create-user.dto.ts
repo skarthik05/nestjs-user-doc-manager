@@ -1,12 +1,14 @@
 import { Allow } from 'class-validator';
 
 import {
+  ClassField,
   EmailField,
   NumberFieldOptional,
   PasswordField,
   PhoneFieldOptional,
   StringField,
 } from '../../../decorators/field.decorators';
+import { FileDto } from '../../../modules/files/dto/file.dto';
 
 export class CreateUserDto {
   @StringField()
@@ -29,4 +31,7 @@ export class CreateUserDto {
 
   @Allow()
   salt?: string;
+
+  @ClassField(() => FileDto)
+  photo?: FileDto | null;
 }

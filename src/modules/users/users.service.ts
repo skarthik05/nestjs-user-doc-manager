@@ -8,6 +8,8 @@ import {
   DetailsConflictException,
   DetailsNotFoundException,
 } from '../../exceptions';
+import { FileType } from '../files/domain/file';
+import { FilesService } from '../files/files.service';
 import { Role } from '../roles/domain/role';
 import { RolesService } from '../roles/roles.service';
 import { User } from './domain/user';
@@ -19,6 +21,7 @@ export class UserService {
   constructor(
     private readonly usersRepository: UserRepository,
     private readonly rolesService: RolesService,
+    private readonly filesService: FilesService,
   ) {}
 
   @Transactional()
@@ -62,6 +65,24 @@ export class UserService {
       role = defaultRole;
     }
 
+    let photo: FileType | null | undefined = undefined;
+
+    if (createUserDto.photo?.id) {
+      const fileObject = await this.filesService.findById(
+        createUserDto.photo.id,
+      );
+      if (!fileObject) {
+        throw new DetailsNotFoundException(
+          'File',
+          'id',
+          createUserDto.photo.id,
+        );
+      }
+      photo = fileObject;
+    } else if (createUserDto.photo === null) {
+      photo = null;
+    }
+
     const user = await this.usersRepository.create({
       firstName: createUserDto.firstName,
       lastName: createUserDto.lastName,
@@ -69,6 +90,7 @@ export class UserService {
       password,
       role,
       salt,
+      photo,
     });
     await this.usersRepository.createUserSettings({
       userId: user.id,

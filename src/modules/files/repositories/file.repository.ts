@@ -1,45 +1,38 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { NullableType } from 'src/common/types/nullable.type';
-import { FileEntity } from 'src/database/entity/file.entity';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
-import { FileType } from '../domain/file';
+import { NullableType } from '../../../common/types/nullable.type';
+import { FileEntity } from '../../../database/entity/file.entity';
 import { FileRepository } from '../file.repository';
-import { FileMapper } from './mappers/file.mapper';
 
 @Injectable()
-export class FileRelationalRepository implements FileRepository {
+export class FileRelationalRepository extends FileRepository {
   constructor(
     @InjectRepository(FileEntity)
     private readonly fileRepository: Repository<FileEntity>,
-  ) {}
-
-  async create(data: FileType): Promise<FileType> {
-    const persistenceModel = FileMapper.toPersistence(data);
-    const savedEntity = await this.fileRepository.save(
-      this.fileRepository.create(persistenceModel),
-    );
-    return FileMapper.toDomain(savedEntity);
+  ) {
+    super();
   }
 
-  async findById(id: FileType['id']): Promise<NullableType<FileType>> {
-    const entity = await this.fileRepository.findOne({
-      where: {
-        id,
-      },
-    });
-
-    return entity ? FileMapper.toDomain(entity) : null;
+  async create(data: Partial<FileEntity>): Promise<FileEntity> {
+    const newFile = this.fileRepository.create(data);
+    return this.fileRepository.save(newFile);
   }
 
-  async findByIds(ids: FileType['id'][]): Promise<FileType[]> {
-    const entities = await this.fileRepository.find({
-      where: {
-        id: In(ids),
-      },
+  async findById(id: number): Promise<NullableType<FileEntity>> {
+    return this.fileRepository.findOne({
+      where: { id },
     });
+  }
 
-    return entities.map((entity) => FileMapper.toDomain(entity));
+  async findByIds(ids: number[]): Promise<FileEntity[]> {
+    return this.fileRepository.find({
+      where: ids.map((id) => ({ id })),
+    });
+  }
+
+  async remove(id: number): Promise<void> {
+    await this.fileRepository.softDelete(id);
   }
 }

@@ -27,6 +27,9 @@ export class FilesLocalService {
     return {
       file: await this.fileRepository.create({
         path: normalizedPath,
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+        size: file.size,
       }),
     };
   }

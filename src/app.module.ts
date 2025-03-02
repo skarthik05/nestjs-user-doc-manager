@@ -9,6 +9,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { JwtRolesGuard } from './guards/auth.guard';
 import { AuthModule } from './modules/auth/auth.module';
+import { FilesModule } from './modules/files/files.module';
 import { HealthCheckerModule } from './modules/health-checker/health-checker.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { UserModule } from './modules/users/users.module';
@@ -41,6 +42,7 @@ import { SharedModule } from './shared/shared.module';
     AuthModule,
     UserModule,
     RolesModule,
+    FilesModule,
   ],
   controllers: [AppController],
   providers: [

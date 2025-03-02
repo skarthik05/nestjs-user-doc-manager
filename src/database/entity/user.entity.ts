@@ -1,7 +1,15 @@
-import { Column, Entity, Index, ManyToOne, OneToOne } from 'typeorm';
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+} from 'typeorm';
 
 import { ENTITY_NAME } from '../../constants/entity.constants';
 import { BaseEntity } from './base.entity';
+import { FileEntity } from './file.entity';
 import { RoleEntity } from './role.entity';
 import { UserSettingsEntity } from './user-settings.entity';
 
@@ -38,4 +46,9 @@ export class UserEntity extends BaseEntity {
     cascade: true,
   })
   settings?: UserSettingsEntity;
+  @OneToOne(() => FileEntity, {
+    eager: true,
+  })
+  @JoinColumn()
+  photo?: FileEntity | null;
 }

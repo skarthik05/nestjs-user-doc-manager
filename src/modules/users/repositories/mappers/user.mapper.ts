@@ -1,3 +1,5 @@
+import { FileMapper } from 'src/modules/files/repositories/mappers/file.mapper';
+
 import { RoleEntity } from '../../../../database/entity/role.entity';
 import { UserEntity } from '../../../../database/entity/user.entity';
 import { User } from '../../domain/user';
@@ -12,6 +14,11 @@ export class UserMapper {
     domainEntity.lastName = raw.lastName;
     if (raw.settings) {
       domainEntity.settings = UserSettingsMapper.toDomain(raw.settings);
+    }
+    if (raw.photo) {
+      domainEntity.photo = FileMapper.toDomain(raw.photo);
+    } else {
+      domainEntity.photo = null;
     }
 
     domainEntity.role = raw.role;
@@ -38,6 +45,9 @@ export class UserMapper {
       persistenceEntity.settings = UserSettingsMapper.toPersistence(
         domainEntity.settings,
       );
+    }
+    if (domainEntity.photo) {
+      persistenceEntity.photo = FileMapper.toPersistence(domainEntity.photo);
     }
     persistenceEntity.email = domainEntity.email;
     persistenceEntity.password = domainEntity.password;

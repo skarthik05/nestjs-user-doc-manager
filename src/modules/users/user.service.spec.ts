@@ -8,6 +8,8 @@ import {
   DetailsNotFoundException,
 } from '../../exceptions';
 import { UserEntity } from '../../database/entity/user.entity';
+import { FilesService } from '../files/files.service';
+
 jest.mock('typeorm-transactional', () => ({
   Transactional: () => () => ({}),
   initializeTransactionalContext: () => {},
@@ -18,6 +20,7 @@ describe('UserService', () => {
   let service: UserService;
   let userRepository: UserRepository;
   let rolesService: RolesService;
+  let filesService: FilesService;
 
   const mockUser = {
     id: 1,
@@ -53,12 +56,19 @@ describe('UserService', () => {
             changeRole: jest.fn(),
           },
         },
+        {
+          provide: FilesService,
+          useValue: {
+            findById: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<UserService>(UserService);
     userRepository = module.get<UserRepository>(UserRepository);
     rolesService = module.get<RolesService>(RolesService);
+    filesService = module.get<FilesService>(FilesService);
   });
 
   it('should be defined', () => {
@@ -121,6 +131,86 @@ describe('UserService', () => {
           email: 'john.doe@example.com',
           role: defaultRole,
         }),
+      );
+    });
+
+    it('should create a user with photo if photo is provided', async () => {
+      const mockFile = {
+        id: 1,
+        path: 'path/to/photo.jpg',
+      };
+
+      const createUserDto: CreateUserDto = {
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        password: 'password123',
+        photo: {
+          id: mockFile.id,
+          path: mockFile.path,
+        },
+      };
+
+      const defaultRole = {
+        id: 1,
+        name: 'Default Role',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: new Date(),
+        isActive: true,
+        isDefault: true,
+        description: '',
+      };
+
+      jest
+        .spyOn(rolesService, 'findDefaultRole')
+        .mockResolvedValue(defaultRole);
+      jest.spyOn(filesService, 'findById').mockResolvedValue(mockFile);
+      jest.spyOn(userRepository, 'create').mockResolvedValue({} as UserEntity);
+
+      await service.create(createUserDto);
+
+      expect(userRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          firstName: 'John',
+          lastName: 'Doe',
+          email: 'john.doe@example.com',
+          role: defaultRole,
+          photo: mockFile,
+        }),
+      );
+    });
+
+    it('should throw DetailsNotFoundException if photo file is not found', async () => {
+      const createUserDto: CreateUserDto = {
+        firstName: 'John',
+        lastName: 'Doe',
+        email: 'john.doe@example.com',
+        password: 'password123',
+        photo: {
+          id: 999,
+          path: 'path/to/nonexistent/photo.jpg',
+        },
+      };
+
+      const defaultRole = {
+        id: 1,
+        name: 'Default Role',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: new Date(),
+        isActive: true,
+        isDefault: true,
+        description: '',
+      };
+
+      jest
+        .spyOn(rolesService, 'findDefaultRole')
+        .mockResolvedValue(defaultRole);
+      jest.spyOn(filesService, 'findById').mockResolvedValue(null);
+
+      await expect(service.create(createUserDto)).rejects.toThrow(
+        DetailsNotFoundException,
       );
     });
   });

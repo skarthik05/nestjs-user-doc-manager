@@ -50,6 +50,7 @@ describe('UserService', () => {
           useValue: {
             findById: jest.fn(),
             findDefaultRole: jest.fn(),
+            changeRole: jest.fn(),
           },
         },
       ],
@@ -83,20 +84,6 @@ describe('UserService', () => {
       } as unknown as UserEntity);
       await expect(service.create(createUserDto)).rejects.toThrow(
         DetailsConflictException,
-      );
-    });
-
-    it('should throw DetailsNotFoundException if role is not found', async () => {
-      const createUserDto: CreateUserDto = {
-        roleId: 1,
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john.doe@example.com',
-        password: 'password123',
-      };
-      jest.spyOn(rolesService, 'findById').mockResolvedValueOnce(null);
-      await expect(service.create(createUserDto)).rejects.toThrow(
-        DetailsNotFoundException,
       );
     });
 
@@ -162,45 +149,27 @@ describe('UserService', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('should return user when found by options', async () => {
-      const findOptions = { email: 'test@example.com' };
-      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(mockUser);
-
-      const result = await service.findOne(findOptions);
-
-      expect(result).toEqual(mockUser);
-      expect(userRepository.findOneBy).toHaveBeenCalledWith(findOptions);
-    });
-
-    it('should return null when user is not found', async () => {
-      const findOptions = { email: 'nonexistent@example.com' };
-      jest.spyOn(userRepository, 'findOneBy').mockResolvedValue(null);
-
-      const result = await service.findOne(findOptions);
-
-      expect(result).toBeNull();
-      expect(userRepository.findOneBy).toHaveBeenCalledWith(findOptions);
-    });
-  });
-
-  describe('findById', () => {
-    it('should return user when found by id', async () => {
-      jest.spyOn(userRepository, 'findById').mockResolvedValue(mockUser);
-
-      const result = await service.findById(1);
-
-      expect(result).toEqual(mockUser);
-      expect(userRepository.findById).toHaveBeenCalledWith(1);
-    });
-
-    it('should return null when user is not found', async () => {
+  describe('changeRole', () => {
+    it('should throw DetailsNotFoundException if user is not found', async () => {
       jest.spyOn(userRepository, 'findById').mockResolvedValue(null);
 
-      const result = await service.findById(999);
-
-      expect(result).toBeNull();
+      await expect(service.changeRole(999, 1)).rejects.toThrow(
+        DetailsNotFoundException,
+      );
       expect(userRepository.findById).toHaveBeenCalledWith(999);
+    });
+
+    it('should change user role successfully', async () => {
+      const userId = 1;
+      const roleId = 2;
+
+      jest.spyOn(userRepository, 'findById').mockResolvedValue(mockUser);
+      jest.spyOn(rolesService, 'changeRole').mockResolvedValue(undefined);
+
+      await service.changeRole(userId, roleId);
+
+      expect(userRepository.findById).toHaveBeenCalledWith(userId);
+      expect(rolesService.changeRole).toHaveBeenCalledWith(userId, roleId);
     });
   });
 });

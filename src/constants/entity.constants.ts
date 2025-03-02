@@ -4,4 +4,5 @@ export const ENTITY_NAME = {
   USER_SETTINGS: 'user_settings',
   USER_SESSION: 'user_sessions',
   FILE: 'files',
+  DOCUMENT: 'documents',
 };

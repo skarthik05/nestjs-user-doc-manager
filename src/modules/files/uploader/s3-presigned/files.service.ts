@@ -3,6 +3,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import {
   HttpStatus,
   Injectable,
+  NotFoundException,
   PayloadTooLargeException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -38,12 +39,7 @@ export class FilesS3PresignedService {
     file: FileUploadDto,
   ): Promise<{ file: FileType; uploadSignedUrl: string }> {
     if (!file) {
-      throw new UnprocessableEntityException({
-        status: HttpStatus.UNPROCESSABLE_ENTITY,
-        errors: {
-          file: 'selectFile',
-        },
-      });
+      throw new NotFoundException('File not found');
     }
 
     if (!file.fileName.match(/\.(jpg|jpeg|png|gif)$/i)) {
@@ -72,10 +68,17 @@ export class FilesS3PresignedService {
       Bucket: this.configService.fileConfig.awsDefaultS3Bucket,
       Key: key,
       ContentLength: file.fileSize,
+      ContentType: file.fileType,
     });
-    const signedUrl = await getSignedUrl(this.s3, command, { expiresIn: 3600 });
+    const signedUrl = await getSignedUrl(this.s3, command, {
+      expiresIn: this.configService.fileConfig.expiresIn,
+    });
+    const filePath = `https://${this.configService.fileConfig.awsDefaultS3Bucket}.s3.${this.configService.fileConfig.awsS3Region}.amazonaws.com/${key}`;
     const data = await this.fileRepository.create({
-      path: key,
+      path: filePath,
+      originalName: file.fileName,
+      mimeType: command.input.ContentType,
+      size: file.fileSize,
     });
 
     return {

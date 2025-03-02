@@ -3,4 +3,5 @@ export const APP_ROUTES = {
   AUTH: 'auth',
   USERS: 'users',
   FILES: 'files',
+  DOCUMENTS: 'documents',
 };

@@ -65,4 +65,22 @@ export class FileType {
     },
   )
   path: string;
+
+  @ApiProperty({
+    type: String,
+    example: 'file.jpg',
+  })
+  originalName: string;
+
+  @ApiProperty({
+    type: String,
+    example: 'image/jpeg',
+  })
+  mimeType: string;
+
+  @ApiProperty({
+    type: Number,
+    example: 1024,
+  })
+  size: number;
 }

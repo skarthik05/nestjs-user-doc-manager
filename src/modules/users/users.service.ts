@@ -67,19 +67,15 @@ export class UserService {
 
     let photo: FileType | null | undefined = undefined;
 
-    if (createUserDto.photo?.id) {
+    if (createUserDto.photoId) {
       const fileObject = await this.filesService.findById(
-        createUserDto.photo.id,
+        createUserDto.photoId,
       );
       if (!fileObject) {
-        throw new DetailsNotFoundException(
-          'File',
-          'id',
-          createUserDto.photo.id,
-        );
+        throw new DetailsNotFoundException('File', 'id', createUserDto.photoId);
       }
       photo = fileObject;
-    } else if (createUserDto.photo === null) {
+    } else if (createUserDto.photoId === null) {
       photo = null;
     }
 

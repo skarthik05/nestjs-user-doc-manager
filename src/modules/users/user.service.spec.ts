@@ -9,6 +9,7 @@ import {
 } from '../../exceptions';
 import { UserEntity } from '../../database/entity/user.entity';
 import { FilesService } from '../files/files.service';
+import { FileEntity } from '../../database/entity/file.entity';
 
 jest.mock('typeorm-transactional', () => ({
   Transactional: () => () => ({}),
@@ -137,18 +138,21 @@ describe('UserService', () => {
     it('should create a user with photo if photo is provided', async () => {
       const mockFile = {
         id: 1,
+        originalName: 'photo.jpg',
+        mimeType: 'image/jpeg',
         path: 'path/to/photo.jpg',
-      };
+        size: 1024,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        deletedAt: null as Date | null,
+      } as FileEntity;
 
       const createUserDto: CreateUserDto = {
         firstName: 'John',
         lastName: 'Doe',
         email: 'john.doe@example.com',
         password: 'password123',
-        photo: {
-          id: mockFile.id,
-          path: mockFile.path,
-        },
+        photoId: mockFile.id,
       };
 
       const defaultRole = {
@@ -187,10 +191,7 @@ describe('UserService', () => {
         lastName: 'Doe',
         email: 'john.doe@example.com',
         password: 'password123',
-        photo: {
-          id: 999,
-          path: 'path/to/nonexistent/photo.jpg',
-        },
+        photoId: 999,
       };
 
       const defaultRole = {

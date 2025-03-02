@@ -1,11 +1,9 @@
-import { type NullableType } from 'src/common/types/nullable.type';
-
-import { type FileType } from './domain/file';
+import { type NullableType } from '../../common/types/nullable.type';
+import { type FileEntity } from '../../database/entity/file.entity';
 
 export abstract class FileRepository {
-  abstract create(data: Omit<FileType, 'id'>): Promise<FileType>;
-
-  abstract findById(id: FileType['id']): Promise<NullableType<FileType>>;
-
-  abstract findByIds(ids: FileType['id'][]): Promise<FileType[]>;
+  abstract findById(id: number): Promise<NullableType<FileEntity>>;
+  abstract findByIds(ids: number[]): Promise<FileEntity[]>;
+  abstract create(data: Partial<FileEntity>): Promise<FileEntity>;
+  abstract remove(id: number): Promise<void>;
 }

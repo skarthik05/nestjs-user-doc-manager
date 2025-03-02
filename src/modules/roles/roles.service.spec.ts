@@ -3,10 +3,22 @@ import { RolesService } from './roles.service';
 import { RoleRepository } from './role.repository';
 import { RoleMapper } from './repositories/mappers/role.mapper';
 import { RoleEntity } from 'src/database/entity/role.entity';
+import { DetailsNotFoundException } from '../../exceptions';
 
 describe('RolesService', () => {
   let service: RolesService;
   let roleRepository: RoleRepository;
+
+  const mockRoleEntity: RoleEntity = {
+    id: 1,
+    name: 'Admin',
+    isDefault: false,
+    isActive: true,
+    description: 'Admin role',
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    deletedAt: new Date(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -17,6 +29,7 @@ describe('RolesService', () => {
           useValue: {
             findById: jest.fn(),
             findDefaultRole: jest.fn(),
+            changeRole: jest.fn(),
           },
         },
       ],
@@ -32,17 +45,7 @@ describe('RolesService', () => {
 
   describe('findById', () => {
     it('should return a role by id', async () => {
-      const mockRoleEntity = {
-        id: 1,
-        name: 'Admin',
-        isDefault: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        deletedAt: new Date(),
-      };
-      const mockRole = RoleMapper.toDomain(
-        mockRoleEntity as unknown as RoleEntity,
-      );
+      const mockRole = RoleMapper.toDomain(mockRoleEntity);
       jest.spyOn(roleRepository, 'findById').mockResolvedValue(mockRole);
 
       const role = await service.findById(1);
@@ -61,17 +64,13 @@ describe('RolesService', () => {
 
   describe('findDefaultRole', () => {
     it('should return the default role', async () => {
-      const mockRoleEntity = {
+      const mockDefaultRole = {
+        ...mockRoleEntity,
         id: 2,
         name: 'User',
         isDefault: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        deletedAt: new Date(),
       };
-      const mockRole = RoleMapper.toDomain(
-        mockRoleEntity as unknown as RoleEntity,
-      );
+      const mockRole = RoleMapper.toDomain(mockDefaultRole);
       jest.spyOn(roleRepository, 'findDefaultRole').mockResolvedValue(mockRole);
 
       const role = await service.findDefaultRole();
@@ -85,6 +84,37 @@ describe('RolesService', () => {
       const role = await service.findDefaultRole();
       expect(role).toBeNull();
       expect(roleRepository.findDefaultRole).toHaveBeenCalled();
+    });
+  });
+
+  describe('changeRole', () => {
+    it('should throw DetailsNotFoundException if role is not found', async () => {
+      const userId = 1;
+      const roleId = 999;
+      jest.spyOn(roleRepository, 'findById').mockResolvedValue(null);
+
+      await expect(service.changeRole(userId, roleId)).rejects.toThrow(
+        DetailsNotFoundException,
+      );
+      expect(roleRepository.findById).toHaveBeenCalledWith(roleId);
+    });
+
+    it('should change user role successfully', async () => {
+      const userId = 1;
+      const roleId = 2;
+      const mockNewRole = {
+        ...mockRoleEntity,
+        id: roleId,
+      };
+      const mockRole = RoleMapper.toDomain(mockNewRole);
+
+      jest.spyOn(roleRepository, 'findById').mockResolvedValue(mockRole);
+      jest.spyOn(roleRepository, 'changeRole').mockResolvedValue(undefined);
+
+      await service.changeRole(userId, roleId);
+
+      expect(roleRepository.findById).toHaveBeenCalledWith(roleId);
+      expect(roleRepository.changeRole).toHaveBeenCalledWith(userId, roleId);
     });
   });
 });

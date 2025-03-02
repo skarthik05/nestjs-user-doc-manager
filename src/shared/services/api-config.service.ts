@@ -6,6 +6,11 @@ import { NamingStrategyInterface } from 'typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 
 import {
+  DomainConfig,
+  FileConfig,
+  FileDriver,
+} from '../../common/types/file-config.type';
+import {
   ENV_CONSTANTS,
   ENV_CONSTANTS_VALUES,
 } from '../../constants/env.constants';
@@ -120,6 +125,27 @@ export class ApiConfigService {
       jwtExpirationTime: this.getString(ENV_CONSTANTS.JWT_EXPIRATION_TIME),
       refreshSecret: this.getString(ENV_CONSTANTS.JWT_REFRESH_SECRET),
       refreshExpires: this.getString(ENV_CONSTANTS.JWT_REFRESH_EXPIRATION_TIME),
+    };
+  }
+  get domainConfig(): DomainConfig {
+    return {
+      backendDomain:
+        this.configService.get(ENV_CONSTANTS.BACKEND_DOMAIN) ??
+        `http://localhost:${this.port}`,
+      frontendDomain: this.getString(ENV_CONSTANTS.FRONTEND_DOMAIN),
+    };
+  }
+  get fileConfig(): FileConfig {
+    return {
+      driver:
+        (this.configService.get(ENV_CONSTANTS.FILE_DRIVER) as FileDriver) ??
+        FileDriver.LOCAL,
+      accessKeyId: this.getString(ENV_CONSTANTS.S3_ACCESS_KEY_ID),
+      secretAccessKey: this.getString(ENV_CONSTANTS.S3_SECRET_ACCESS_KEY),
+      awsDefaultS3Bucket: this.getString(ENV_CONSTANTS.S3_DEFAULT_BUCKET),
+      awsS3Region: this.getString(ENV_CONSTANTS.S3_REGION),
+      maxFileSize: this.getNumber(ENV_CONSTANTS.FILE_MAX_SIZE),
+      expiresIn: this.getNumber(ENV_CONSTANTS.S3_SIGNED_URL_EXPIRATION),
     };
   }
 }

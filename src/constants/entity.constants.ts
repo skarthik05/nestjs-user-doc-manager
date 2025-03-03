@@ -5,4 +5,5 @@ export const ENTITY_NAME = {
   USER_SESSION: 'user_sessions',
   FILE: 'files',
   DOCUMENT: 'documents',
+  INGESTION: 'ingestions',
 };

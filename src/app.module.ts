@@ -12,6 +12,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { DocumentsModule } from './modules/documents/documents.module';
 import { FilesModule } from './modules/files/files.module';
 import { HealthCheckerModule } from './modules/health-checker/health-checker.module';
+import { IngestionModule } from './modules/ingestion/ingestion.module';
 import { RolesModule } from './modules/roles/roles.module';
 import { UserModule } from './modules/users/users.module';
 import { ApiConfigService } from './shared/services/api-config.service';
@@ -45,6 +46,7 @@ import { SharedModule } from './shared/shared.module';
     RolesModule,
     FilesModule,
     DocumentsModule,
+    IngestionModule,
   ],
   controllers: [AppController],
   providers: [

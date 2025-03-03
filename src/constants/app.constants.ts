@@ -4,4 +4,5 @@ export const APP_ROUTES = {
   USERS: 'users',
   FILES: 'files',
   DOCUMENTS: 'documents',
+  INGESTION: 'ingestion',
 };

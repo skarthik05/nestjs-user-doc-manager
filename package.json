@@ -17,6 +17,7 @@
     "migration:run": "npm run typeorm -- --dataSource=src/database/data-source.ts migration:run",
     "migration:revert": "npm run typeorm -- --dataSource=src/database/data-source.ts migration:revert",
     "migration:show": "npm run typeorm -- --dataSource=src/database/data-source.ts migration:show",
+    "seed": "ts-node -r tsconfig-paths/register src/database/seeds/seed.ts",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
